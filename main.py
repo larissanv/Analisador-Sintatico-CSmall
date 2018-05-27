@@ -1,4 +1,5 @@
 import lexico as Lexico
+import sintatico as Sintatico
 
 if __name__ == "__main__":
 	
@@ -7,5 +8,8 @@ if __name__ == "__main__":
 	# Lexico.Lexico().run(arquivo) 
 
 	# GAMBIARRA
-	Lexico.Lexico().run("codigo-fonte.c")
+	lista_tokens = Lexico.Lexico().run("codigo-fonte.c")
+	for i in lista_tokens:
+	 	print (str(i))
+	# Sintatico.Programa()
 

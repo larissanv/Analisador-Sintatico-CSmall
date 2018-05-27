@@ -59,6 +59,7 @@ class Token(object):
         self.lexema = value
         self.numLinha = None
         self.value = None
+        print("Tolkien < type ", self.type, ",lex ", self.lexema,">" )
 
     def __str__(self):
         """String representation of the class instance.
@@ -69,8 +70,8 @@ class Token(object):
             Token(MUL, '*')
         """
         return 'Token({type}, {lexema})'.format(
-            type= tokenNames[self.type],
-            lexema=self.lexema
+            type = dic_tokens[self.type],
+            lexema = self.lexema
         )
 
     def __repr__(self):
@@ -299,18 +300,21 @@ def print_tree(current_node, indent="", last='updown'):
         print_tree(child, indent=next_indent, last=next_last)
 
 
-tokenNames = {}
-tokenNames[EOF] = 'EOF';
-tokenNames[ID] = 'ID'
-tokenNames[INTEGER_CONST] = 'INTEGER_CONST'
-tokenNames[FLOAT_CONST] = 'FLOAT_CONST'
-tokenNames[LBRACKET] = 'LBRACKET'
-tokenNames[RBRACKET] = 'RBRACKET'
-tokenNames[PLUS] = 'PLUS'
-tokenNames[MINUS] = 'MINUS'
-tokenNames[MULT] = 'MULT'
-tokenNames[DIV] = 'DIV'
+# tokenNames = {}
+# tokenNames[EOF] = 'EOF';
+# tokenNames[ID] = 'ID'
+# tokenNames[INTEGER_CONST] = 'INTEGER_CONST'
+# tokenNames[FLOAT_CONST] = 'FLOAT_CONST'
+# tokenNames[LBRACKET] = 'LBRACKET'
+# tokenNames[RBRACKET] = 'RBRACKET'
+# tokenNames[PLUS] = 'PLUS'
+# tokenNames[MINUS] = 'MINUS'
+# tokenNames[MULT] = 'MULT'
+# tokenNames[DIV] = 'DIV'
+# tokenNames[INT] = 9
 
+
+dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST'}
 
 tk1 = Token(ID, 'a')
 tkplus = Token(PLUS, '+')
