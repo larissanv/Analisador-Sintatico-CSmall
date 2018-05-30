@@ -10,6 +10,14 @@ if __name__ == "__main__":
 	# GAMBIARRA
 	lista_tokens = Lexico.Lexico().run("codigo-fonte.c")
 	for i in lista_tokens:
-	 	print (str(i))
-	# Sintatico.Programa()
+		print (str(i))
+
+	root = Sintatico.Programa(lista_tokens)
+	# print('Árvore de Sintaxe Abstrata: ')
+	# Sintatico.print_tree(root)
+	# print('\n-------------')
+	# print('Tabela de símbolos')
+	# print(str(Sintatico.tabSimbolos))
+	# print('-------------')
+
 

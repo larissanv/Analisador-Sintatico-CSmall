@@ -1,18 +1,12 @@
 int main()
 {
 float a;
+int b;
+int c;
+
 a = 1.1;
-int i, inc, j;
-i = 0;
-inc = 2;
-read j;
-while (i < j)
-{
-i = i + inc;
-a = a*i;
-}
-if (a >= 10.0 || a <= 0 && a!=10 || a==100 )
-{
-print(a + i);
-}
+b = 5;
+c = 10;
+c = a;
+b = c;
 }

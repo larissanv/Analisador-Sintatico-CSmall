@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Aug 26 10:28:28 2017
 
-@author: alexandre
-"""
 #TOKEN CODES
 
 EOF = -1
@@ -24,7 +20,7 @@ LBRACE = 12
 RBRACE = 13
 COMMA = 14
 PCOMMA = 15
-ATTR = 1
+ATTR = 16
 IF = 17
 ELSE = 18
 WHILE = 19
@@ -59,7 +55,7 @@ class Token(object):
         self.lexema = value
         self.numLinha = None
         self.value = None
-        print("Tolkien < type ", self.type, ",lex ", self.lexema,">" )
+        # print("Tolkien < type ", self.type, ",lex ", self.lexema,">" )
 
     def __str__(self):
         """String representation of the class instance.
@@ -69,9 +65,10 @@ class Token(object):
             Token(PLUS, '+')
             Token(MUL, '*')
         """
-        return 'Token({type}, {lexema})'.format(
+        return 'Token: <lexema: {lexema}, tipo: {type}, valor: {value}>'.format(
             type = dic_tokens[self.type],
-            lexema = self.lexema
+            lexema = self.lexema,
+            value = self.value
         )
 
     def __repr__(self):
@@ -83,7 +80,7 @@ class Token(object):
 
 """
  A tabela de símbolos é implementada como uma classe com o seguinte campo:
-     - Map<string,TableEntry> symbolTable; //Um mapa de objetos tableEntry
+     - Map<string,TableEntry> symbolTable //Um mapa de objetos tableEntry
 """
 """
  TableEntry é uma classe que possui os seguintes campos:
@@ -92,44 +89,44 @@ class Token(object):
      - ponteiro para o valor
      - num da linha
 """
-class SymbolTable(object):
-    def __init__(self):
-        self.symbolTable = {}
+# class SymbolTable(object):
+#     def __init__(self):
+#         self.symbolTable = {}
 
-    def insertEntry(self, lexema, entry):
-        self.symbolTable[lexema] = entry;
+#     def insertEntry(self, lexema, entry):
+#         self.symbolTable[lexema] = entry
 
-    def getEntry(self, lexema):
-        if (self.symbolTable[lexema]):
-            return self.symbolTable[lexema]
-        else:
-            return None
+#     def getEntry(self, lexema):
+#         if (self.symbolTable[lexema]):
+#             return self.symbolTable[lexema]
+#         else:
+#             return None
 
-    def __repr__(self):
-        str_res = ''
-        for i in self.symbolTable:
-            str_res += ('{' + str(i) + ',' + str(self.symbolTable[i]) + '}') + '\n'
-        return str_res
+#     def __repr__(self):
+#         str_res = ''
+#         for i in self.symbolTable:
+#             str_res += ('{' + str(i) + ',' + str(self.symbolTable[i]) + '}') + '\n'
+#         return str_res
 
-class TableEntry(object):
-    def __init__(self, lexema, tipo, num_linha, ref_valor):
-        self.lexema = lexema
-        self.tipo = tipo
-        self.num_linha = num_linha
-        self.ref_valor = ref_valor
+# class TableEntry(object):
+#     def __init__(self, lexema, tipo, num_linha, ref_valor):
+#         self.lexema = lexema
+#         self.tipo = tipo
+#         self.num_linha = num_linha
+#         self.ref_valor = ref_valor
 
-    def setTipo(self, tipo):
-        self.tipo = tipo
+#     def setTipo(self, tipo):
+#         self.tipo = tipo
 
-    def setRefValor(self, rv):
-        self.ref_valor = rv
+#     def setRefValor(self, rv):
+#         self.ref_valor = rv
 
-    def __repr__(self):
-        return '<lexema: ' + str(self.lexema) + ', tipo: ' + str(self.tipo) + ', valor: ' + str(self.ref_valor) + '>'
+#     def __repr__(self):
+#         return '<lexema: ' + str(self.lexema) + ', tipo: ' + str(self.tipo) + ', valor: ' + str(self.ref_valor) + '>'
 
 class AST(object):
     def __init__(self, nome):
-         self.nome = nome;
+         self.nome = nome
          self.children = []
          self.tipo = None  #tipo do nó. Compound, Assign, ArithOp, etc
          self.value = None
@@ -161,7 +158,7 @@ class Compound(AST):
 
 class Attr(AST):
     def __init__(self, left, op, right):
-        AST.__init__(self,'Attr');
+        AST.__init__(self,'Attr')
         print('Criando um nó do tipo Attr.')
         self.op = op
         self.children.append(left)
@@ -236,13 +233,14 @@ class RelOp(Expr):
         print('Criando um nó do tipo RelOp com operador ' + str(op))
 
 class Id(AST):
-    def __init__(self, entradaTabSimbolos):
+    def __init__(self, token):
         AST.__init__(self,'Id')
         print('Criando um nó do tipo Id.')
-        self.entradaTabSimbolos = entradaTabSimbolos
+        self.token = token
+
 
     def __repr__(self):
-        return 'ID: ' + repr(self.entradaTabSimbolos)
+        return 'ID: ' + repr(self.token.lexema)
 
     # def __str__(self):
     #     return str(self.entradaTabSimbolos.lexema)
@@ -253,10 +251,10 @@ class Num(AST):
         print('Criando um nó do tipo Num.')
         self.token = token
         self.value = float(token.lexema)  #em python, não precisamos nos preocupar com o tipo de value
-        self.type = type_;
+        self.type = type_
 
     def __repr__(self):
-        return str(self.token)  # + ' ; tipo: ' + str(self.type)
+        return str(self.token)  # + '  tipo: ' + str(self.type)
 
     # def __str__(self):
     #     return str(self.value)
@@ -300,75 +298,11 @@ def print_tree(current_node, indent="", last='updown'):
         print_tree(child, indent=next_indent, last=next_last)
 
 
-# tokenNames = {}
-# tokenNames[EOF] = 'EOF';
-# tokenNames[ID] = 'ID'
-# tokenNames[INTEGER_CONST] = 'INTEGER_CONST'
-# tokenNames[FLOAT_CONST] = 'FLOAT_CONST'
-# tokenNames[LBRACKET] = 'LBRACKET'
-# tokenNames[RBRACKET] = 'RBRACKET'
-# tokenNames[PLUS] = 'PLUS'
-# tokenNames[MINUS] = 'MINUS'
-# tokenNames[MULT] = 'MULT'
-# tokenNames[DIV] = 'DIV'
-# tokenNames[INT] = 9
-
-
 dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST'}
 
-tk1 = Token(ID, 'a')
-tkplus = Token(PLUS, '+')
 
-tkint1 = Token(INTEGER_CONST, 5)
-
-tkdiv = Token(DIV, '/')
-tk6 = Token(ID, 'b')
-
-tkeof = Token(EOF, 'EOF')
-tklbracket = Token(LBRACKET, '(')
-tkrbracket = Token(RBRACKET, ')')
-tkminus = Token(MINUS, '-')
-tkmult = Token(MULT, '*')
-
-tkfloat1 = Token(FLOAT_CONST, 3.5)
-tkfloat2 = Token(FLOAT_CONST, 1.22)
-
-tkint2 = Token(INTEGER_CONST, 2)
-tkintconst4 = Token(INTEGER_CONST, 4)
-
-#vetorTokens = [tk1, tk2, tklbracket, tk4, tk5, tklbracket, tk1, tkminus, tk1,
- #              tkrbracket, tkrbracket, tkmult, tk1, tkmult, tk1, tkeof]
-
-#vetorTokens = [tkint1, tkmult, tkfloat1, tkdiv, tklbracket, tkint2, tkplus, tkint2,
- #              tkrbracket, tkminus, tkfloat1, tkminus, tkfloat2, tkeof]
-#vetorTokens = [tkint1, tkmult, tkfloat1, tkdiv, tklbracket, tkint2, tkplus, tkfloat2,
- #              tkrbracket, tkeof]
-
-#vetorTokens = [tk1, tk2, tk4, tk5, tk6, tk0] #vetor de objetos do tipo Token
-
-tkinttype = Token(INT, 'int')
-tkfloattype = Token(FLOAT, 'float')
-tklbrace = Token(LBRACE, '{')
-tkrbrace = Token(RBRACE, '}')
-tkmain = Token(MAIN, 'main')
-tkpcomma = Token(PCOMMA,';')
-
-#vetorTokens = [tkinttype, tkmain, tklbracket, tkrbracket,
-#                tklbrace, tkinttype, Token(ID, 'i'), Token(ATTR, '='), Token(INTEGER_CONST, 0),
-#                tkpcomma, Token(ID, 'i'), Token(ATTR, '='), Token(ID, 'i'),
-#                tkplus, tkint2, tkmult, tkintconst4, tkpcomma, tkrbrace, tkeof]
-
-vetorTokens = [tkinttype, tkmain, tklbracket, tkrbracket, tklbrace,
-               tkinttype, Token(ID, 'j'), tkpcomma,
-               tkinttype, Token(ID, 'i'), Token(ATTR, '='), Token(INTEGER_CONST, 10), tkpcomma,
-               tkfloattype, Token(ID, 'a'), Token(ATTR, '='), Token(FLOAT_CONST, 1.5), tkminus, Token(FLOAT_CONST, 2.5), tkpcomma,
-                Token(ID, 'i'), Token(ATTR, '='), Token(ID, 'i'), tkplus, Token(ID, 'a'),tkplus, tkint2, tkmult, tkintconst4, tkpcomma,
-                tkfloattype, Token(ID, 'b'), tkpcomma,
-                Token(ID, 'j'), Token(ATTR, '='), Token(ID, 'i'), tkpcomma,
-                tkrbrace, tkeof]
-
-i = 0;
-token = vetorTokens[i];
+i = 0
+# token = vetorTokens[i]
 
 Follow = {}
 Follow[INTEGER_CONST] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
@@ -381,28 +315,15 @@ Follow[MULT] = ['ID','NUM', 'LBRACKET']
 Follow[DIV] = ['ID','NUM', 'LBRACKET']
 conjSincronismo = [INTEGER_CONST, FLOAT_CONST, ID,LBRACKET,MULT,DIV,PLUS,MINUS,RBRACKET,EOF]
 
-#def sincroniza(entry_tok):
-#    global token, i;
-#    print('Sincronizando token ' + repr(token))
-#    while (not (token in conjSincronismo)):
-#        i = i + 1
-#        if (i < len(vetorTokens)):
-#            token = vetorTokens[i]
-#        else:
-#            return;
-#    print('Sincronizado.')
-#    i = i + 1;
-#    token = vetorTokens[i];
-#    match(entry_tok)
-
+vetorTokens = []
 currentType = None
 currentTableEntry = None
 currentToken = None
 
-tabSimbolos = SymbolTable()
+# tabSimbolos = SymbolTable()
 
 def match(tok):
-    global token, i;
+    global token, i
     if(token.type == tok):
         #print('Token ' + repr(token) + ' reconhecido na entrada.')
         i = i + 1
@@ -410,172 +331,201 @@ def match(tok):
             token = vetorTokens[i]
     else:
         print('Erro sintático. Token ' + repr(token) + ' não esperado na entrada.')
-        i = i - 1;
+        i = i - 1
         token = vetorTokens[i]
         print('Tokens ' + str(Follow[token.type]) + ' esperados na entrada.')
         i = i + 1
         token = vetorTokens[i]
         #sincroniza(tok)
 
-def Programa():
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
-    match(INT);
-    match(MAIN);
-    match(LBRACKET);
-    match(RBRACKET);
-    match(LBRACE);
+def TabelaSimbolos():
+    print("Tabela de simbolos")
+    lista_tabelaSimbolos = {}
+
+    for it in range(0,len(vetorTokens)): 
+        if(vetorTokens[it].type == INTEGER_CONST or vetorTokens[it].type == FLOAT_CONST):
+            vetorTokens[it].value = vetorTokens[it].lexema
+        if(vetorTokens[it].type == ID and (vetorTokens[it-1].type == INT or vetorTokens[it-1].type == FLOAT)):
+            lista_tabelaSimbolos[vetorTokens[it].lexema] = dic_tokens[vetorTokens[it-1].type],vetorTokens[it].value
+            # print(vetorTokens[it])
+
+    for it in range(0,len(vetorTokens)): 
+        if(vetorTokens[it].type == ATTR and vetorTokens[it-1].type == ID):
+            vetorTokens[it-1].value = vetorTokens[it+1].value
+           
+    print(lista_tabelaSimbolos)
+
+
+def Programa(lista_tokens):
+    print("\nAnalisador Sintatico CSmall")
+    global token,  currentType,  currentToken
+    for a in lista_tokens:
+        # print (a)
+        vetorTokens.append(a)
+    TabelaSimbolos()
+    token = lista_tokens[i]
+    match(INT)
+    match(MAIN)
+    match(LBRACKET)
+    match(RBRACKET)
+    match(LBRACE)
     lista = AST('Main')
-    ast = Decl_Comando(lista);
-    match(RBRACE);
-    if(token.type == EOF):
-        match(EOF)
-        print('Fim da análise sintática.\n')
+    ast = Decl_Comando(lista)
+    match(RBRACE)
+    print('Fim da análise sintática.\n')
     return ast
 
 def Decl_Comando(no):
     print('Decl_Comando recebeu:\n ' + str(no))
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
+    # print("!!!!!token!!!!!",token)
+    # bla = input('Digite para continuar')
     if (token.type == INT or token.type == FLOAT):
-        no = Declaracao(no);
+        no1 = Declaracao(no)
         print('Declaracao retornou:\n ' + str(no))
-        return Decl_Comando(no);
+        return Decl_Comando(no1)
     elif (token.type == ID or token.type == IF or token.type == WHILE or token.type == PRINT
           or token.type == READ):
-        no = Comando(no); #Criamos nós na ast para cada comando encontrado
+        no1 = Comando(no) #Criamos nós na ast para cada comando encontrado
         print('Comando retornou:\n ' + str(no))
-        return Decl_Comando(no);
-    return no
+        return Decl_Comando(no1)
+    else:
+        return no
+
 
 def Declaracao(no):
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
-    Tipo();
+    global token,  currentType,  currentToken
+    Tipo()  
     if (token.type == ID):
         currentToken = token
-        te = TableEntry(token.lexema, currentType, None, None)
-        currentTableEntry = te
-        tabSimbolos.insertEntry(token.lexema, te)
-        match(ID); #cria uma entrada na tabela de símbolos para esse identificador
-        return Decl2(no);
-    return no;
+        # te = TableEntry(token.lexema, currentType, None, None)
+        # currentTableEntry = te
+        # tabSimbolos.insertEntry(token.lexema, te)
+        match(ID) #cria uma entrada na tabela de símbolos para esse identificador
+        return Decl2(no)
+    return no
 
 
 def Tipo():
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
     if (token.type == INT):
-        match(INT);
+        match(INT)
         currentType = int_type
     elif (token.type == FLOAT):
-        match(FLOAT);
+        match(FLOAT)
         currentType = float_type
 
 def Decl2(no):
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
+    # print("!!!!!decl2!!!!!",token.lexema)
+    # bla = input('Digite para continuar')
     if (token.type == COMMA):
-        match(COMMA);
+        match(COMMA)
         if (token.type == ID):
-            te = TableEntry(token.lexema, currentType, None, None)
-            currentTableEntry = te
-            tabSimbolos.insertEntry(token.lexema, te)
-            match(ID); #cria uma entrada na tabela de símbolos para esse identificador
-            return Decl2(no);
+            # te = TableEntry(token.lexema, currentType, None, None)
+            # currentTableEntry = te
+            # tabSimbolos.insertEntry(token.lexema, te)
+            match(ID) #cria uma entrada na tabela de símbolos para esse identificador
+            return Decl2(no)
     elif (token.type == PCOMMA):
-        match(PCOMMA);
+        match(PCOMMA)
         return no
     elif (token.type == ATTR):
-        id_node = Id(currentTableEntry)
-        match(ATTR);
-        expr_node = E();
+        match(ATTR)
+        id_node = Id(token)
+        expr_node = E()
         attr_node = Attr(id_node, '=', expr_node)
         no.children.append(attr_node)
-        return Decl2(no);
-    return no;
+        return Decl2(no)
+    return no
 
 def Comando(no):
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
     if (token.type == ID): #nesse momento, podemos buscar informações sobre esse Id na tabela de símbolos
         print('Procurando lexema ' + token.lexema)
-        te = tabSimbolos.getEntry(token.lexema)
+        # te = tabSimbolos.getEntry(token.lexema)
         id_node = None
-        if (te):
-            print('Encontrado o lexema na tabela de símbolos.')
-            print('Tipo do identificador: ' + str(typeNames[te.tipo]))
-            #print('Valor do identificador: ' + str(te.ref_valor))
-            id_node = Id(te) #Cria o nó Id passando uma referência para a entrada da tabela de símbolos desse identificador
-        match(ID);
-        match(ATTR);
-        expr_node = E();
+        # if (te):
+        #     print('Encontrado o lexema na tabela de símbolos.')
+        #     print('Tipo do identificador: ' + str(typeNames[te.tipo]))
+        #     print('Valor do identificador: ' + str(te.ref_valor))
+        #     id_node = Id(te) #Cria o nó Id passando uma referência para a entrada da tabela de símbolos desse identificador
+        id_node = Id(token)
+        match(ID)
+        match(ATTR)
+        expr_node = E()
         attr_node = Attr(id_node, '=', expr_node)
         match(PCOMMA)
-        no.children.append(attr_node);
+        no.children.append(attr_node)
         return no
 
     elif (token.type == IF):
         match(IF)
-        match(LBRACKET);
-        expr_node = E();
+        match(LBRACKET)
+        expr_node = E()
         match(RBRACKET)
         if_node = If(expr_node, None, None)
         Comando(if_node) 
         if(token.type == ELSE):
             match(ELSE)
             Comando(if_node) 
-        no.children.append(if_node);
+        no.children.append(if_node)
         
     return no
 
 def E():
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
-    no_ope1 = T();
-    return E_(no_ope1);
+    global token,  currentType,  currentToken
+    no_ope1 = T()
+    return E_(no_ope1)
 
 def E_(no_ope1):
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
     if(token.type == PLUS):
-        match(PLUS);
-        no_ope2 = T();
+        match(PLUS)
+        no_ope2 = T()
         no = ArithOp('+', no_ope1, no_ope2)
-        return E_(no);
+        return E_(no)
     elif (token.type == MINUS):
-        match(MINUS);
-        no_ope2 = T();
+        match(MINUS)
+        no_ope2 = T()
         no = ArithOp('-', no_ope1, no_ope2)
-        return E_(no);
+        return E_(no)
     return no_ope1
 
 def T():
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
-    no_ope1 = F();
-    return T_(no_ope1);
+    global token,  currentType,  currentToken
+    no_ope1 = F()
+    return T_(no_ope1)
 
 def T_(no_ope1):
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
     if (token.type == MULT):
-        match(MULT);
-        no_ope2 = F();
+        match(MULT)
+        no_ope2 = F()
         no = ArithOp('*', no_ope1, no_ope2)
-        return T_(no);
+        return T_(no)
     elif(token.type == DIV):
-        match(DIV);
-        no_ope2 = F();
+        match(DIV)
+        no_ope2 = F()
         no = ArithOp('/', no_ope1, no_ope2)
-        return T_(no);
+        return T_(no)
     return no_ope1
 
 def F():
-    global token, tabSimbolos, currentType, currentTableEntry, currentToken;
+    global token,  currentType,  currentToken
     if(token.type == LBRACKET):
-        match(LBRACKET);
-        expr = E();
-        match(RBRACKET);
+        match(LBRACKET)
+        expr = E()
+        match(RBRACKET)
         return expr
     elif (token.type == ID):
-        te = tabSimbolos.getEntry(token.lexema)
-        id_node = None
-        if (te):
-            print('Encontrado o lexema na tabela de símbolos.')
-            print('Tipo do identificador: ' + str(typeNames[te.tipo]))
-            id_node = Id(te)
-        match(ID);
+        # te = tabSimbolos.getEntry(token.lexema)
+        id_node =  Id(token)
+        # if (te):
+        #     print('Encontrado o lexema na tabela de símbolos.')
+        #     print('Tipo do identificador: ' + str(typeNames[te.tipo]))
+        #     id_node = Id(te)
+        match(ID)
         return id_node
     elif(token.type == INTEGER_CONST):
         num_node = Num(token, int_type)
@@ -585,14 +535,3 @@ def F():
         num_node = Num(token, float_type)
         match(FLOAT_CONST)
         return num_node
-
-"""
-Início da análise sintática de descida recursiva
-"""
-root = Programa()
-print('Árvore de Sintaxe Abstrata: ')
-print_tree(root)
-print('\n-------------')
-print('Tabela de símbolos')
-print(str(tabSimbolos))
-print('-------------')

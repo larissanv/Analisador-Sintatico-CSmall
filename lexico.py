@@ -1,8 +1,6 @@
 import regex as regex
 import sintatico as token
 
-
-
 class Lexico():
 
 	def __init__(self):
@@ -151,7 +149,7 @@ LBRACE = 12
 RBRACE = 13
 COMMA = 14
 PCOMMA = 15
-ATTR = 1
+ATTR = 16
 IF = 17
 ELSE = 18
 WHILE = 19
@@ -165,16 +163,3 @@ LT = 26
 LE = 27
 GT = 28
 GE = 29
-
-tokenNames = {}
-tokenNames[EOF] = 'EOF';
-tokenNames[ID] = 'ID'
-tokenNames[INTEGER_CONST] = 'INTEGER_CONST'
-tokenNames[FLOAT_CONST] = 'FLOAT_CONST'
-tokenNames[LBRACKET] = 'LBRACKET'
-tokenNames[RBRACKET] = 'RBRACKET'
-tokenNames[PLUS] = 'PLUS'
-tokenNames[MINUS] = 'MINUS'
-tokenNames[MULT] = 'MULT'
-tokenNames[DIV] = 'DIV'
-tokenNames[INT] = 'INT'
