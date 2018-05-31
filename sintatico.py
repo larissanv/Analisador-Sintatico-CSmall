@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 #TOKEN CODES
 
 EOF = -1
@@ -49,13 +51,35 @@ opmap[MULT] = '*'
 opmap[DIV] = '/'
 
 
+dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST'}
+
+i = 0
+# token = vetorTokens[i]
+
+Follow = {}
+Follow[INTEGER_CONST] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
+Follow[FLOAT_CONST] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
+Follow[ID] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
+Follow[LBRACKET] = ['ID','NUM', 'LBRACKET']
+Follow[MINUS] = ['ID','NUM', 'LBRACKET']
+Follow[PLUS] = ['ID','NUM', 'LBRACKET']
+Follow[MULT] = ['ID','NUM', 'LBRACKET']
+Follow[DIV] = ['ID','NUM', 'LBRACKET']
+conjSincronismo = [INTEGER_CONST, FLOAT_CONST, ID,LBRACKET,MULT,DIV,PLUS,MINUS,RBRACKET,EOF]
+
+vetorTokens = []
+currentType = None
+currentTableEntry = None
+currentToken = None
+
+# tabSimbolos = SymbolTable()
+
 class Token(object):
-    def __init__(self, type, value):
+    def __init__(self, type, valor,numLinha):
         self.type = type
-        self.lexema = value
-        self.numLinha = None
-        self.value = None
-        # print("Tolkien < type ", self.type, ",lex ", self.lexema,">" )
+        self.lexema = valor
+        self.numLinha = numLinha
+        self.valor = None
 
     def __str__(self):
         """String representation of the class instance.
@@ -65,10 +89,11 @@ class Token(object):
             Token(PLUS, '+')
             Token(MUL, '*')
         """
-        return 'Token: <lexema: {lexema}, tipo: {type}, valor: {value}>'.format(
+        return '{type}: <lexema: {lexema}, tipo: {type}, valor: {valor}, num_linha: {numlinha}>'.format(
             type = dic_tokens[self.type],
             lexema = self.lexema,
-            value = self.value
+            valor = self.valor,
+            numlinha = self.numLinha
         )
 
     def __repr__(self):
@@ -129,7 +154,7 @@ class AST(object):
          self.nome = nome
          self.children = []
          self.tipo = None  #tipo do nó. Compound, Assign, ArithOp, etc
-         self.value = None
+         self.valor = None
 
     def __str__(self, level=0):
         ret = "   "*level+ repr(self) +"\n"
@@ -163,6 +188,22 @@ class Attr(AST):
         self.op = op
         self.children.append(left)
         self.children.append(right)
+        print (left)
+        doc = ET.SubElement(root, "Attr")
+
+        if(left.nome == 'Id'):
+            ET.SubElement(doc, left.nome, tipo="{tipo}".format(tipo = left.tipo))
+        elif(left.nome == 'ArithOp'):
+            ET.SubElement(doc, left.nome, op="{op}".format(op = left.op))
+        elif(left.nome == 'Num'):
+            ET.SubElement(doc, left.nome, valor="{value}".format(value = left.valor), tipo="{tipo}".format(tipo = left.tipo))
+
+        if(right.nome == 'Id'):
+            ET.SubElement(doc, right.nome, tipo="{tipo}".format(tipo = right.tipo))
+        elif(right.nome == 'ArithOp'):
+            ET.SubElement(doc, right.nome, op="{op}".format(op = right.op))
+        elif(right.nome == 'Num'):
+            ET.SubElement(doc, right.nome, valor="{value}".format(value = right.valor), tipo="{tipo}".format(tipo = right.tipo))
 
     def __repr__(self):
         return self.nome
@@ -240,8 +281,7 @@ class Id(AST):
 
 
     def __repr__(self):
-        return 'ID: ' + repr(self.token.lexema)
-
+        return str(self.token)
     # def __str__(self):
     #     return str(self.entradaTabSimbolos.lexema)
 
@@ -250,7 +290,7 @@ class Num(AST):
         AST.__init__(self,'Num')
         print('Criando um nó do tipo Num.')
         self.token = token
-        self.value = float(token.lexema)  #em python, não precisamos nos preocupar com o tipo de value
+        self.valor = float(token.lexema)  #em python, não precisamos nos preocupar com o tipo de value
         self.type = type_
 
     def __repr__(self):
@@ -260,7 +300,7 @@ class Num(AST):
     #     return str(self.value)
 
     def __evaluate__(self):
-        return self.value
+        return self.valor
 
 def print_tree(current_node, indent="", last='updown'):
 
@@ -298,30 +338,6 @@ def print_tree(current_node, indent="", last='updown'):
         print_tree(child, indent=next_indent, last=next_last)
 
 
-dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST'}
-
-
-i = 0
-# token = vetorTokens[i]
-
-Follow = {}
-Follow[INTEGER_CONST] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
-Follow[FLOAT_CONST] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
-Follow[ID] = ['MULT','DIV','PLUS','MINUS','RBRACKET','EOF']
-Follow[LBRACKET] = ['ID','NUM', 'LBRACKET']
-Follow[MINUS] = ['ID','NUM', 'LBRACKET']
-Follow[PLUS] = ['ID','NUM', 'LBRACKET']
-Follow[MULT] = ['ID','NUM', 'LBRACKET']
-Follow[DIV] = ['ID','NUM', 'LBRACKET']
-conjSincronismo = [INTEGER_CONST, FLOAT_CONST, ID,LBRACKET,MULT,DIV,PLUS,MINUS,RBRACKET,EOF]
-
-vetorTokens = []
-currentType = None
-currentTableEntry = None
-currentToken = None
-
-# tabSimbolos = SymbolTable()
-
 def match(tok):
     global token, i
     if(token.type == tok):
@@ -340,25 +356,40 @@ def match(tok):
 
 def TabelaSimbolos():
     print("Tabela de simbolos")
+    global lista_tabelaSimbolos 
     lista_tabelaSimbolos = {}
+    iterator = 0
 
     for it in range(0,len(vetorTokens)): 
         if(vetorTokens[it].type == INTEGER_CONST or vetorTokens[it].type == FLOAT_CONST):
-            vetorTokens[it].value = vetorTokens[it].lexema
-        if(vetorTokens[it].type == ID and (vetorTokens[it-1].type == INT or vetorTokens[it-1].type == FLOAT)):
-            lista_tabelaSimbolos[vetorTokens[it].lexema] = dic_tokens[vetorTokens[it-1].type],vetorTokens[it].value
-            # print(vetorTokens[it])
+            vetorTokens[it].valor = vetorTokens[it].lexema
+        elif(vetorTokens[it].type == ID and (vetorTokens[it-1].type == INT or vetorTokens[it-1].type == FLOAT)):
+            lista_tabelaSimbolos[iterator] = vetorTokens[it].lexema,dic_tokens[vetorTokens[it-1].type],0
+            iterator += 1
+        elif(vetorTokens[it].type == ID and vetorTokens[it-1].type == COMMA):
+            aux = it
+            tipo = None
+            while(aux > 1):
+                aux -= 1
+                if(vetorTokens[aux].type == INT):
+                    tipo = INT
+                    break
+                elif(vetorTokens[aux].type == FLOAT):
+                    tipo = FLOAT
+                    break
 
-    for it in range(0,len(vetorTokens)): 
-        if(vetorTokens[it].type == ATTR and vetorTokens[it-1].type == ID):
-            vetorTokens[it-1].value = vetorTokens[it+1].value
+            lista_tabelaSimbolos[iterator] = vetorTokens[it].lexema,dic_tokens[tipo],0
+            iterator += 1
            
+    printTabelaSimbolos()
+
+def printTabelaSimbolos():
     print(lista_tabelaSimbolos)
 
-
-def Programa(lista_tokens):
+def Programa(lista_tokens, nomeArquivoSaida):
     print("\nAnalisador Sintatico CSmall")
-    global token,  currentType,  currentToken
+    global token, currentType, currentToken, arquivoSaida, root
+
     for a in lista_tokens:
         # print (a)
         vetorTokens.append(a)
@@ -369,9 +400,22 @@ def Programa(lista_tokens):
     match(LBRACKET)
     match(RBRACKET)
     match(LBRACE)
+
+    root = ET.Element("ASTnode")
+
     lista = AST('Main')
     ast = Decl_Comando(lista)
     match(RBRACE)
+    
+    tree = ET.tostring(root)   
+    novo = ET.fromstring(tree)
+    rough_string = ET.tostring(novo, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    # print(reparsed.toprettyxml(indent="\t"))
+
+    arquivoSaida = open(nomeArquivoSaida,'w')
+    arquivoSaida.write(reparsed.toprettyxml(indent="\t"))
+    arquivoSaida.close()
     print('Fim da análise sintática.\n')
     return ast
 
