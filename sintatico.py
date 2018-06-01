@@ -160,7 +160,7 @@ class AST(object):
         ret = "   "*level+ repr(self) +"\n"
         for child in self.children:
             if (child != None):
-                ret += child.__str__(level+1) #level+1
+                ret += child.__str__() #level+1
         return ret
 
     def __repr__(self):
@@ -194,7 +194,7 @@ class Attr(AST):
         if(left.nome == 'Id'):
             ET.SubElement(doc, left.nome, tipo="{tipo}".format(tipo = left.tipo))
         elif(left.nome == 'ArithOp'):
-            ET.SubElement(doc, left.nome, op="{op}".format(op = left.op))
+           ET.SubElement(doc, left.nome, op="{op}".format(op = left.op))
         elif(left.nome == 'Num'):
             ET.SubElement(doc, left.nome, valor="{value}".format(value = left.valor), tipo="{tipo}".format(tipo = left.tipo))
 
@@ -209,12 +209,18 @@ class Attr(AST):
         return self.nome
 
 class If(AST):
-    def __init__(self, exp, c_true, c_false):
-        AST.__init__(self, 'If')
+    def __init__(self, exp, c_true, c_false, father):
+        AST.__init__(self, 'If', father)
         print('Criando um nó do tipo If.')
         self.children.append(exp)
         self.children.append(c_true)
         self.children.append(c_false)
+        self.exp = exp    
+        self.c_true = c_true
+        self.c_false = c_false
+
+    def __init__(self,  nome):
+    	AST.__init__(self, nome)
 
     def __repr__(self):
         return self.nome
@@ -226,6 +232,8 @@ class While(AST):
         print('Criando um nó do tipo While.')
         self.children.append(exp)
         self.children.append(commands)
+    def __init__(self,nome):
+    	AST.__init__(self, nome)
 
     def __repr__(self):
         return self.nome
@@ -248,7 +256,7 @@ class Print(AST):
     def __repr__(self):
         return self.nome
 
-class Expr(AST):
+class BinOp(AST):
     def __init__(self, nome, op, left, right):
         AST.__init__(self,nome)
         self.op = op
@@ -256,21 +264,21 @@ class Expr(AST):
         self.children.append(right)
 
     def __repr__(self):
-        return self.op  # + ': ' + self.children[0].__repr__() + ', ' + self.children[1].__repr__()
+        return str(self.op)  # + ': ' + self.children[0].__repr__() + ', ' + self.children[1].__repr__()
 
-class LogicalOp(Expr):
+class LogicalOp(BinOp):
     def __init__(self, op, left, right):
-        Expr.__init__(self,'LogicalOp', op, left, right)
+        BinOp.__init__(self,'LogicalOp', op, left, right)
         print('Criando um nó do tipo LogicalOp com operador ' + str(op))
 
-class ArithOp(Expr):
+class ArithOp(BinOp):
     def __init__(self, op, left, right):
-        Expr.__init__(self,'ArithOp', op, left, right)
+        BinOp.__init__(self,'ArithOp', op, left, right)
         print('Criando um nó do tipo ArithOp com operador ' + str(op))
 
-class RelOp(Expr):
+class RelOp(BinOp):
     def __init__(self, left, op, right):
-        Expr.__init__(self,'RelOp', op, left, right)
+        BinOp.__init__(self,'RelOp', op, left, right)
         print('Criando um nó do tipo RelOp com operador ' + str(op))
 
 class Id(AST):
@@ -279,9 +287,14 @@ class Id(AST):
         print('Criando um nó do tipo Id.')
         self.token = token
 
-
     def __repr__(self):
-        return str(self.token)
+        # return str(self.token)
+        return str('ID: <lexema: {lexema}, tipo: {type}, valor: {valor}, num_linha: {numlinha}>'.format(
+            type = dic_tokens[self.token.type],
+            lexema = self.token.lexema,
+            valor = self.token.valor,
+            numlinha = self.token.numLinha
+        ))
     # def __str__(self):
     #     return str(self.entradaTabSimbolos.lexema)
 
@@ -347,11 +360,11 @@ def match(tok):
             token = vetorTokens[i]
     else:
         print('Erro sintático. Token ' + repr(token) + ' não esperado na entrada.')
-        i = i - 1
-        token = vetorTokens[i]
-        print('Tokens ' + str(Follow[token.type]) + ' esperados na entrada.')
-        i = i + 1
-        token = vetorTokens[i]
+        # i = i - 1
+        # token = vetorTokens[i]
+        # print('Tokens ' + str(Follow[token.type]) + ' esperados na entrada.')
+        # i = i + 1
+        # token = vetorTokens[i]
         #sincroniza(tok)
 
 def TabelaSimbolos():
@@ -411,7 +424,7 @@ def Programa(lista_tokens, nomeArquivoSaida):
     novo = ET.fromstring(tree)
     rough_string = ET.tostring(novo, 'utf-8')
     reparsed = minidom.parseString(rough_string)
-    # print(reparsed.toprettyxml(indent="\t"))
+    print(reparsed.toprettyxml(indent="\t"))
 
     arquivoSaida = open(nomeArquivoSaida,'w')
     arquivoSaida.write(reparsed.toprettyxml(indent="\t"))
@@ -419,32 +432,29 @@ def Programa(lista_tokens, nomeArquivoSaida):
     print('Fim da análise sintática.\n')
     return ast
 
-def Decl_Comando(no):
-    print('Decl_Comando recebeu:\n ' + str(no))
+def Decl_Comando(lista):
+    # print('Decl_Comando recebeu:\n ' + str(lista))
     global token,  currentType,  currentToken
-    # print("!!!!!token!!!!!",token)
-    # bla = input('Digite para continuar')
+
     if (token.type == INT or token.type == FLOAT):
-        no1 = Declaracao(no)
-        print('Declaracao retornou:\n ' + str(no))
+        no1 = Declaracao(lista)
+        # print('Declaracao retornou:\n ' + str(lista))
         return Decl_Comando(no1)
     elif (token.type == ID or token.type == IF or token.type == WHILE or token.type == PRINT
           or token.type == READ):
-        no1 = Comando(no) #Criamos nós na ast para cada comando encontrado
-        print('Comando retornou:\n ' + str(no))
+        no1 = Comando(lista) #Criamos nós na ast para cada comando encontrado
+        # print('Comando retornou:\n ' + str(lista))
         return Decl_Comando(no1)
     else:
-        return no
+        return lista
 
 
 def Declaracao(no):
-    global token,  currentType,  currentToken
+    global token,  currentType, currentToken, id_node
     Tipo()  
     if (token.type == ID):
         currentToken = token
-        # te = TableEntry(token.lexema, currentType, None, None)
-        # currentTableEntry = te
-        # tabSimbolos.insertEntry(token.lexema, te)
+        id_node = Id(token)
         match(ID) #cria uma entrada na tabela de símbolos para esse identificador
         return Decl2(no)
     return no
@@ -460,115 +470,255 @@ def Tipo():
         currentType = float_type
 
 def Decl2(no):
-    global token,  currentType,  currentToken
-    # print("!!!!!decl2!!!!!",token.lexema)
-    # bla = input('Digite para continuar')
+    global token,  currentType,  currentToken, id_node
+   
     if (token.type == COMMA):
         match(COMMA)
         if (token.type == ID):
-            # te = TableEntry(token.lexema, currentType, None, None)
-            # currentTableEntry = te
-            # tabSimbolos.insertEntry(token.lexema, te)
-            match(ID) #cria uma entrada na tabela de símbolos para esse identificador
+            id_node = Id(token)
+            match(ID)
             return Decl2(no)
     elif (token.type == PCOMMA):
         match(PCOMMA)
         return no
     elif (token.type == ATTR):
         match(ATTR)
-        id_node = Id(token)
-        expr_node = E()
+        expr_node = Expressao()
         attr_node = Attr(id_node, '=', expr_node)
         no.children.append(attr_node)
         return Decl2(no)
     return no
 
-def Comando(no):
+
+def Comando(lista):
+	if(token.type == LBRACE):
+		return Bloco(lista)
+	elif(token.type == ID):
+		return Atribuicao(lista)
+	elif(token.type == IF):
+		return ComandoSe(lista)
+	elif(token.type == WHILE):
+		return ComandoEnquanto(lista)
+	elif(token.type == READ):
+		return ComandoRead(lista)
+	elif(token.type == PRINT):
+		return ComandoPrint(lista)
+
+def Bloco(lista):
+	match(LBRACE)
+	bloco = AST('Bloco')
+	retorno = Decl_Comando(bloco)
+	match(RBRACE)	
+	lista.children.append(retorno)
+	return lista
+
+def Atribuicao(lista):
+    global id_node
+    id_node = Id(token)
+    match(ID)
+    match(ATTR)
+    expr_node = Expressao()
+    lista.children.append(Attr('=',id_node,expr_node))
+    match(PCOMMA)
+    return lista
+
+def ComandoRead(lista):
+	read_node = Read(READ)
+	match(READ)
+	id_node = Id(token)
+	read_node.children.append(id_node)
+	match(ID)
+	match(PCOMMA)	
+	lista.children.append(read_node)		
+	return lista
+
+def ComandoSe(lista):
+	if_node = If(IF)
+	match(IF)
+	match(LBRACKET)
+	expr_node = Expressao()
+	if_node.children.append(expr_node)
+	match(RBRACKET)
+	c_true = AST('C_TRUE')
+	retorno = Comando(c_true)
+	if_node.children.append(retorno)
+	ComandoSenao(if_node)	
+	lista.children.append(if_node)
+	return lista
+
+def ComandoSenao(if_node):
+	if(token.type == ELSE):
+		c_false = AST('C_FALSE')
+		match(ELSE)
+		retorno = Comando(c_false)
+		if_node.children.append(retorno)
+		return if_node
+	else :
+		return if_node
+
+def ComandoEnquanto(lista):
+	while_node = While("While")
+	match(WHILE)
+	match(LBRACKET)
+	expr_node = Expressao()
+	while_node.children.append(expr_node)
+	match(RBRACKET)
+	c_true = AST('C_TRUE')
+	retorno = Comando(c_true)
+	while_node.children.append(retorno)
+	lista.children.append(while_node)
+	return lista
+
+def ComandoPrint(lista):
+	print_node = Print(PRINT)
+	match(PRINT)
+	match(LBRACKET)
+	expr = Expressao()
+	print_node.children.append(expr)
+	match(RBRACKET)
+	match(PCOMMA)	
+	lista.children.append(print_node)	
+	return lista
+
+
+def Expressao():      
+    expr = Conjuncao()
+    return ExpressaoOpc(expr)
+
+def ExpressaoOpc(expr):
+	if(token.type == OR):
+		match(OR)
+		expr2 = Conjuncao()
+		or_node = LogicalOp('||',expr,expr2)
+		expr2 = ExpressaoOpc(or_node)		
+		return expr2
+	else: 
+		return expr
+
+def Conjuncao():
+	expr = Igualdade()
+	return ConjuncaoOpc(expr)
+
+
+def ConjuncaoOpc(expr):
+	if(token.type == AND):
+		match(AND)
+		expr2= Igualdade()
+		and_node = LogicalOp('&&',expr,expr2)
+		expr2 = ConjuncaoOpc(and_node)		
+		return expr2
+	else:
+		return expr
+
+def Igualdade():
+	expr = Relacao()
+	return IgualdadeOpc(expr)
+
+def IgualdadeOpc(expr):
+	if(token.type == EQ):
+		match(EQ)
+		expr2 = Relacao()
+		igual_node = RelOp('==',expr,expr2)
+		return IgualdadeOpc(igual_node)
+	elif(token.type == NE):
+		match(NE)	
+		expr2 = Relacao()
+		diferente_node = RelOp('!=',expr,expr2)
+		return IgualdadeOpc(diferente_node)
+	else : 
+		return expr
+
+def Relacao():
+	expr = Adicao()
+	return RelacaoOpc(expr)
+
+def RelacaoOpc(expr):
+	if(token.type == LT):
+		OpRel()
+		expr2 = Adicao()
+		menor_node = RelOp('<',expr,expr2)
+		return RelacaoOpc(menor_node)
+	elif(token.type == LE):
+		OpRel()
+		expr2 = Adicao()
+		menorigual_node = RelOp('<=',expr,expr2)
+		return RelacaoOpc(menorigual_node)
+	elif(token.type == GT):
+		OpRel()
+		expr2 = Adicao()
+		maior_node = RelOp('>',expr,expr2)
+		return RelacaoOpc(maior_node)
+	elif(token.type == GE):
+		OpRel()
+		expr2 = Adicao()
+		maiorigual_node = RelOp('>=',expr,expr2)
+		return RelacaoOpc(maiorigual_node)
+	else : 
+		return expr	
+
+	
+def OpRel():
+	if(token.type == LT ):
+		match(LT)
+	elif(token.type == LE) :
+		match(LE)		
+	elif(token.type == GT):
+		match(GT)		
+	elif(token.type == GE):
+		match(GE)
+
+
+
+def Adicao():
     global token,  currentType,  currentToken
-    if (token.type == ID): #nesse momento, podemos buscar informações sobre esse Id na tabela de símbolos
-        print('Procurando lexema ' + token.lexema)
-        # te = tabSimbolos.getEntry(token.lexema)
-        id_node = None
-        # if (te):
-        #     print('Encontrado o lexema na tabela de símbolos.')
-        #     print('Tipo do identificador: ' + str(typeNames[te.tipo]))
-        #     print('Valor do identificador: ' + str(te.ref_valor))
-        #     id_node = Id(te) #Cria o nó Id passando uma referência para a entrada da tabela de símbolos desse identificador
-        id_node = Id(token)
-        match(ID)
-        match(ATTR)
-        expr_node = E()
-        attr_node = Attr(id_node, '=', expr_node)
-        match(PCOMMA)
-        no.children.append(attr_node)
-        return no
+    no_ope1 = Termo()
+    return AdicaoOpc(no_ope1)
 
-    elif (token.type == IF):
-        match(IF)
-        match(LBRACKET)
-        expr_node = E()
-        match(RBRACKET)
-        if_node = If(expr_node, None, None)
-        Comando(if_node) 
-        if(token.type == ELSE):
-            match(ELSE)
-            Comando(if_node) 
-        no.children.append(if_node)
-        
-    return no
-
-def E():
-    global token,  currentType,  currentToken
-    no_ope1 = T()
-    return E_(no_ope1)
-
-def E_(no_ope1):
+def AdicaoOpc(no_ope1):
     global token,  currentType,  currentToken
     if(token.type == PLUS):
         match(PLUS)
-        no_ope2 = T()
+        no_ope2 = Termo()
         no = ArithOp('+', no_ope1, no_ope2)
-        return E_(no)
+        return AdicaoOpc(no)
     elif (token.type == MINUS):
         match(MINUS)
-        no_ope2 = T()
+        no_ope2 = Termo()
         no = ArithOp('-', no_ope1, no_ope2)
-        return E_(no)
-    return no_ope1
+        return AdicaoOpc(no)
+    else:
+        return no_ope1
 
-def T():
-    global token,  currentType,  currentToken
-    no_ope1 = F()
-    return T_(no_ope1)
+def Termo():
+    global token, currentType, currentToken
+    no_ope1 = Fator()
+    return TermoOpc(no_ope1)
 
-def T_(no_ope1):
-    global token,  currentType,  currentToken
+def TermoOpc(no_ope1):
+    global token, currentType, currentToken
     if (token.type == MULT):
         match(MULT)
-        no_ope2 = F()
+        no_ope2 = Fator()
         no = ArithOp('*', no_ope1, no_ope2)
-        return T_(no)
+        return TermoOpc(no)
     elif(token.type == DIV):
         match(DIV)
-        no_ope2 = F()
+        no_ope2 = Fator()
         no = ArithOp('/', no_ope1, no_ope2)
-        return T_(no)
-    return no_ope1
+        return TermoOpc(no)
+    else:
+        return no_ope1
 
-def F():
-    global token,  currentType,  currentToken
+
+def Fator():
+    global token, currentType, currentToken
     if(token.type == LBRACKET):
         match(LBRACKET)
-        expr = E()
+        expr = Expressao()
         match(RBRACKET)
         return expr
     elif (token.type == ID):
-        # te = tabSimbolos.getEntry(token.lexema)
-        id_node =  Id(token)
-        # if (te):
-        #     print('Encontrado o lexema na tabela de símbolos.')
-        #     print('Tipo do identificador: ' + str(typeNames[te.tipo]))
-        #     id_node = Id(te)
+        id_node = Id(token)
         match(ID)
         return id_node
     elif(token.type == INTEGER_CONST):

@@ -1,19 +1,6 @@
 <?xml version="1.0" ?>
 <ASTnode>
-	<Attr>
-		<Id tipo="None"/>
-		<Num tipo="None" valor="5.0"/>
-	</Attr>
-	<Attr>
-		<Id tipo="None"/>
-		<ArithOp op="/"/>
-	</Attr>
-	<Attr>
-		<Id tipo="None"/>
-		<ArithOp op="/"/>
-	</Attr>
-	<Attr>
-		<Id tipo="None"/>
-		<ArithOp op="+"/>
-	</Attr>
+	<Attr/>
+	<Attr/>
+	<Attr/>
 </ASTnode>

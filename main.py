@@ -15,9 +15,10 @@ if __name__ == "__main__":
 		print (str(i))
 
 	root = Sintatico.Programa(lista_tokens, arquivosaida)
-	# print('Árvore de Sintaxe Abstrata: ')
+	print('Árvore de Sintaxe Abstrata: ')
 	# Sintatico.print_tree(root)
-	# print('\n-------------')
+	print(root)
+	print('\n-------------')
 	print('Tabela de símbolos')
 	print(Sintatico.printTabelaSimbolos())
 	print('-------------')
