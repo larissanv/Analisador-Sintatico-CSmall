@@ -58,7 +58,7 @@ class Lexico():
 
 				if flag == 1:
 					if aux == c:
-						novotoken = token.token(self.dic_tokens[c+aux],c+aux,linha)
+						novotoken = token.Token(self.dic_tokens[c+aux],c+aux,linha)
 						# novotoken = token.Token(self.dic_tokens[c+aux],c+aux)
 						lista_tokens.append(novotoken)
 					flag = 0

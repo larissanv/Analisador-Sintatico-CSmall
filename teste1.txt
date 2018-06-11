@@ -1,6 +1,61 @@
-<?xml version="1.0" ?>
-<ASTnode>
-	<Attr/>
-	<Attr/>
-	<Attr/>
-</ASTnode>
+<Main>
+    <Attr>
+        <Id lexema='x' type='FLOAT' />
+        <ArithOp op='/' >
+            <Num value=2 type='INTEGER_CONST' />
+            <ArithOp op='*' >
+                <Num value=3 type='INTEGER_CONST' />
+                <Num value=5 type='INTEGER_CONST' />
+            </ArithOp>
+        </ArithOp>
+    </Attr>
+    <Attr>
+        <Id lexema='a' type='None' />
+        <ArithOp op='/' >
+            <ArithOp op='-' >
+                <Num value=67 type='INTEGER_CONST' />
+                <Num value=233 type='INTEGER_CONST' />
+            </ArithOp>
+            <Id lexema='e' type='INT' />
+        </ArithOp>
+    </Attr>
+    <Attr>
+        <Id lexema='c' type='INT' />
+        <ArithOp op='+' >
+            <Num value=2.456 type='FLOAT_CONST' />
+            <ArithOp op='*' >
+                <Num value=343.5 type='FLOAT_CONST' />
+                <Num value=13.15 type='FLOAT_CONST' />
+            </ArithOp>
+        </ArithOp>
+    </Attr>
+    <If>
+        <RelOp op='==' >
+            <Id lexema='a' type='None' />
+            <Id lexema='c' type='INT' />
+        </RelOp>
+        <C_TRUE>
+            <Bloco>
+                <Attr>
+                    <Id lexema='t' type='INT' />
+                    <Num value=7 type='INTEGER_CONST' />
+                </Attr>
+                <Read>
+                    <Id lexema='i' type='None' />
+                </Read>
+                <Print >
+                    <ArithOp op='+' >
+                        <Id lexema='a' type='None' />
+                        <Id lexema='c' type='INT' />
+                    </ArithOp>
+                </Print>
+            </Bloco>
+        </C_TRUE>
+        <C_FALSE>
+            <Attr>
+                <Id lexema='t' type='INT' />
+                <Num value=1 type='INTEGER_CONST' />
+            </Attr>
+        </C_FALSE>
+    </If>
+</Main>

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import xml.etree.ElementTree as ET
-import xml.dom.minidom as minidom
 #TOKEN CODES
 
 EOF = -1
@@ -44,12 +42,6 @@ typeNames = {}
 typeNames[int_type] = 'int'
 typeNames[float_type] = 'float'
 
-opmap = {}
-opmap[PLUS] = '+'
-opmap[MINUS] = '-'
-opmap[MULT] = '*'
-opmap[DIV] = '/'
-
 
 dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST'}
 
@@ -72,83 +64,6 @@ currentType = None
 currentTableEntry = None
 currentToken = None
 
-# tabSimbolos = SymbolTable()
-
-class Token(object):
-    def __init__(self, type, valor,numLinha):
-        self.type = type
-        self.lexema = valor
-        self.numLinha = numLinha
-        self.valor = None
-
-    def __str__(self):
-        """String representation of the class instance.
-
-        Examples:
-            Token(INTEGER_CONST, 3)
-            Token(PLUS, '+')
-            Token(MUL, '*')
-        """
-        return '{type}: <lexema: {lexema}, tipo: {type}, valor: {valor}, num_linha: {numlinha}>'.format(
-            type = dic_tokens[self.type],
-            lexema = self.lexema,
-            valor = self.valor,
-            numlinha = self.numLinha
-        )
-
-    def __repr__(self):
-        #return self.__str__()
-        return str(self.type)
-
-    def __convertTo__(self):
-        return
-
-"""
- A tabela de símbolos é implementada como uma classe com o seguinte campo:
-     - Map<string,TableEntry> symbolTable //Um mapa de objetos tableEntry
-"""
-"""
- TableEntry é uma classe que possui os seguintes campos:
-     - lexema
-     - tipo
-     - ponteiro para o valor
-     - num da linha
-"""
-# class SymbolTable(object):
-#     def __init__(self):
-#         self.symbolTable = {}
-
-#     def insertEntry(self, lexema, entry):
-#         self.symbolTable[lexema] = entry
-
-#     def getEntry(self, lexema):
-#         if (self.symbolTable[lexema]):
-#             return self.symbolTable[lexema]
-#         else:
-#             return None
-
-#     def __repr__(self):
-#         str_res = ''
-#         for i in self.symbolTable:
-#             str_res += ('{' + str(i) + ',' + str(self.symbolTable[i]) + '}') + '\n'
-#         return str_res
-
-# class TableEntry(object):
-#     def __init__(self, lexema, tipo, num_linha, ref_valor):
-#         self.lexema = lexema
-#         self.tipo = tipo
-#         self.num_linha = num_linha
-#         self.ref_valor = ref_valor
-
-#     def setTipo(self, tipo):
-#         self.tipo = tipo
-
-#     def setRefValor(self, rv):
-#         self.ref_valor = rv
-
-#     def __repr__(self):
-#         return '<lexema: ' + str(self.lexema) + ', tipo: ' + str(self.tipo) + ', valor: ' + str(self.ref_valor) + '>'
-
 class AST(object):
     def __init__(self, nome):
          self.nome = nome
@@ -160,7 +75,7 @@ class AST(object):
         ret = "   "*level+ repr(self) +"\n"
         for child in self.children:
             if (child != None):
-                ret += child.__str__() #level+1
+                ret += child.__str__(level+1)  #level+1
         return ret
 
     def __repr__(self):
@@ -171,6 +86,60 @@ class AST(object):
             if (child != None):
                 return child.__evaluate__()
 
+    def tabs(self, level):
+        deslocamento = ""
+        while (level!=0):
+            level = level - 1
+            deslocamento += "    "
+        return deslocamento
+
+    def printNode(self, level):
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "<" + str(self.nome) + ">\n")
+        
+        for child in self.children:
+            # if (child != None):
+            child.printNode(level+1)
+        
+        print(deslocamento + "</" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
+        
+
+
+class Token(object):
+    def __init__(self, type, valor,numLinha):
+        self.type = type
+        self.lexema = valor
+        self.numLinha = numLinha
+        self.valor = None
+
+    def __str__(self, level=0):
+        """String representation of the class instance.
+
+    #     Examples:
+    #         Token(INTEGER_CONST, 3)
+    #         Token(PLUS, '+')
+    #         Token(MUL, '*')
+    #     """
+        return '{type}: <lexema: {lexema}, tipo: {type}, valor: {valor}, num_linha: {numlinha}>'.format(
+            type = dic_tokens[self.type],
+            lexema = self.lexema,
+            valor = self.valor,
+            numlinha = self.numLinha
+        )
+
+    def __repr__(self):
+        #return self.__str__()
+        # return str(self.type)
+        return str("Token")
+
+    def __convertTo__(self):
+        return
+    def printNode(self, level):
+        # deslocamento = self.tabs(level)
+        print(deslocamento + "< Token >")
+
 class Compound(AST):
     """Represents a 'BEGIN ... END' block"""
     def __init__(self):
@@ -180,6 +149,10 @@ class Compound(AST):
 
     def __repr__(self):
         return self.nome
+    
+    def __str__(self, level):
+        return str(self.nome)
+
 
 class Attr(AST):
     def __init__(self, left, op, right):
@@ -189,25 +162,13 @@ class Attr(AST):
         self.children.append(left)
         self.children.append(right)
         print (left)
-        doc = ET.SubElement(root, "Attr")
-
-        if(left.nome == 'Id'):
-            ET.SubElement(doc, left.nome, tipo="{tipo}".format(tipo = left.tipo))
-        elif(left.nome == 'ArithOp'):
-           ET.SubElement(doc, left.nome, op="{op}".format(op = left.op))
-        elif(left.nome == 'Num'):
-            ET.SubElement(doc, left.nome, valor="{value}".format(value = left.valor), tipo="{tipo}".format(tipo = left.tipo))
-
-        if(right.nome == 'Id'):
-            ET.SubElement(doc, right.nome, tipo="{tipo}".format(tipo = right.tipo))
-        elif(right.nome == 'ArithOp'):
-            ET.SubElement(doc, right.nome, op="{op}".format(op = right.op))
-        elif(right.nome == 'Num'):
-            ET.SubElement(doc, right.nome, valor="{value}".format(value = right.valor), tipo="{tipo}".format(tipo = right.tipo))
-
+       
     def __repr__(self):
-        return self.nome
+        return str(self.nome)
+    def __str__(self, level):
+        return str(self.nome)
 
+   
 class If(AST):
     def __init__(self, exp, c_true, c_false, father):
         AST.__init__(self, 'If', father)
@@ -220,10 +181,12 @@ class If(AST):
         self.c_false = c_false
 
     def __init__(self,  nome):
-    	AST.__init__(self, nome)
+    	AST.__init__(self, "If")
 
     def __repr__(self):
-        return self.nome
+        return str(self.nome)
+    def __str__(self, level):
+        return str(self.nome)
 
 
 class While(AST):
@@ -236,25 +199,42 @@ class While(AST):
     	AST.__init__(self, nome)
 
     def __repr__(self):
-        return self.nome
+        return str(self.nome)
+    def __str__(self, level):
+        return str(self.nome)
+    # def printNode(self, level):
+    #     deslocamento = self.tabs(level)
+    #     print(deslocamento + "<" + str(self.nome) + ">")
 
 class Read(AST):
-    def __init__(self, id_):
+    def __init__(self):
         AST.__init__(self,'Read')
         print('Criando um nó do tipo Read.')
-        self.children.append(id_)
 
     def __repr__(self):
-        return self.nome
+        return str(self.nome)
+    def __str__(self, level=0):
+        return str(self.nome)
 
 class Print(AST):
-    def __init__(self, exp):
+    def __init__(self):
         AST.__init__(self,'Print')
         print('Criando um nó do tipo Print.')
-        self.children.append(exp)
 
     def __repr__(self):
-        return self.nome
+        return str(self.nome)
+    def __str__(self, level=0):
+        return str(self.nome)
+    def printNode(self, level):       
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + str(self.nome) +" >")
+        arquivoSaida.write(deslocamento + "<" + str(self.nome)+ " >\n")
+        for child in self.children:
+            # if (child != None):
+            child.printNode(level+1)
+        
+        print(deslocamento + "</" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
 
 class BinOp(AST):
     def __init__(self, nome, op, left, right):
@@ -262,41 +242,94 @@ class BinOp(AST):
         self.op = op
         self.children.append(left)
         self.children.append(right)
+    def __str__(self, level=0):
+        return str(self.nome)
 
     def __repr__(self):
+        # return str("op")
         return str(self.op)  # + ': ' + self.children[0].__repr__() + ', ' + self.children[1].__repr__()
+    
+    def printNode(self, level):       
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + str(self.nome) + " op='" + str(self.op) +"' >")
+        arquivoSaida.write(deslocamento + "<" + str(self.nome)+ " op='" + str(self.op) +"' >\n")
+        for child in self.children:
+            # if (child != None):
+            child.printNode(level+1)
+        
+        print(deslocamento + "</" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
 
 class LogicalOp(BinOp):
     def __init__(self, op, left, right):
         BinOp.__init__(self,'LogicalOp', op, left, right)
         print('Criando um nó do tipo LogicalOp com operador ' + str(op))
+    def __str__(self, level=0):
+        return str(self.nome)
+    def printNode(self, level):       
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + str(self.nome) + " op='" + str(self.op) +"' >")
+        arquivoSaida.write(deslocamento + "<" + str(self.nome)+ " op='" + str(self.op) +"' >\n")
+        for child in self.children:
+            # if (child != None):
+            child.printNode(level+1)
+        
+        print(deslocamento + "</" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
 
 class ArithOp(BinOp):
     def __init__(self, op, left, right):
         BinOp.__init__(self,'ArithOp', op, left, right)
         print('Criando um nó do tipo ArithOp com operador ' + str(op))
+    def __str__(self, level=0):
+        return str(self.nome)
+    def printNode(self, level):       
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + str(self.nome) + " op='" + str(self.op) +"' >")
+        arquivoSaida.write(deslocamento + "<" + str(self.nome)+ " op='" + str(self.op) +"' >\n")
+        for child in self.children:
+            # if (child != None):
+            child.printNode(level+1)
+        
+        print(deslocamento + "</" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
 
 class RelOp(BinOp):
-    def __init__(self, left, op, right):
+    def __init__(self, op, left, right):
         BinOp.__init__(self,'RelOp', op, left, right)
         print('Criando um nó do tipo RelOp com operador ' + str(op))
+    def __str__(self, level=0):
+        return str(self.nome)
+    def printNode(self, level):       
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + str(self.nome) + " op='" + str(self.op) +"' >")
+        arquivoSaida.write(deslocamento + "<" + str(self.nome)+ " op='" + str(self.op) +"' >\n")
+        for child in self.children:
+            # if (child != None):
+            child.printNode(level+1)
+        
+        print(deslocamento + "</" + str(self.nome) + ">")
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
 
 class Id(AST):
     def __init__(self, token):
         AST.__init__(self,'Id')
         print('Criando um nó do tipo Id.')
         self.token = token
+    def __str__(self, level=0):
+        return str("ID")
 
     def __repr__(self):
         # return str(self.token)
-        return str('ID: <lexema: {lexema}, tipo: {type}, valor: {valor}, num_linha: {numlinha}>'.format(
-            type = dic_tokens[self.token.type],
-            lexema = self.token.lexema,
-            valor = self.token.valor,
-            numlinha = self.token.numLinha
-        ))
-    # def __str__(self):
-    #     return str(self.entradaTabSimbolos.lexema)
+        return str("ID")
+    
+    def printNode(self, level):
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + self.nome, end='')
+        arquivoSaida.write(deslocamento + "<" + self.nome)   
+        tipoTabelaSimbolos = getIdTabelaSimbolos(str(self.token.lexema)) 
+        print(" lexema='" + str(self.token.lexema) +"' type='"+ str(tipoTabelaSimbolos) + "' />")
+        arquivoSaida.write(" lexema='" + str(self.token.lexema) +"' type='"+ tipoTabelaSimbolos + "' />\n")
 
 class Num(AST):
     def __init__(self, token, type_):
@@ -307,13 +340,19 @@ class Num(AST):
         self.type = type_
 
     def __repr__(self):
-        return str(self.token)  # + '  tipo: ' + str(self.type)
-
-    # def __str__(self):
-    #     return str(self.value)
+        return str("Num")
 
     def __evaluate__(self):
         return self.valor
+    def __str__(self, level=0):
+        return str(self.nome)
+   
+    def printNode(self, level):
+        deslocamento = self.tabs(level)
+        print(deslocamento + "<" + self.nome, end='')
+        arquivoSaida.write(deslocamento + "<" + self.nome)        
+        print(" value=" + str(self.token.lexema) +" type='"+ str(dic_tokens[self.token.type]) + "' />")
+        arquivoSaida.write(" value=" + str(self.token.lexema) +" type='"+ str(dic_tokens[self.token.type]) + "' />\n")
 
 def print_tree(current_node, indent="", last='updown'):
 
@@ -360,13 +399,7 @@ def match(tok):
             token = vetorTokens[i]
     else:
         print('Erro sintático. Token ' + repr(token) + ' não esperado na entrada.')
-        # i = i - 1
-        # token = vetorTokens[i]
-        # print('Tokens ' + str(Follow[token.type]) + ' esperados na entrada.')
-        # i = i + 1
-        # token = vetorTokens[i]
-        #sincroniza(tok)
-
+       
 def TabelaSimbolos():
     print("Tabela de simbolos")
     global lista_tabelaSimbolos 
@@ -396,54 +429,52 @@ def TabelaSimbolos():
            
     printTabelaSimbolos()
 
+def getIdTabelaSimbolos(id):
+    for it in range(0,len(lista_tabelaSimbolos)): 
+        if(id == lista_tabelaSimbolos[it][0]):
+            return(lista_tabelaSimbolos[it][1])
+    return "None"
+
+
 def printTabelaSimbolos():
     print(lista_tabelaSimbolos)
 
 def Programa(lista_tokens, nomeArquivoSaida):
     print("\nAnalisador Sintatico CSmall")
-    global token, currentType, currentToken, arquivoSaida, root
+    global token, currentType, currentToken, arquivoSaida
 
     for a in lista_tokens:
-        # print (a)
         vetorTokens.append(a)
+
     TabelaSimbolos()
     token = lista_tokens[i]
+
     match(INT)
     match(MAIN)
     match(LBRACKET)
     match(RBRACKET)
     match(LBRACE)
 
-    root = ET.Element("ASTnode")
-
     lista = AST('Main')
     ast = Decl_Comando(lista)
     match(RBRACE)
     
-    tree = ET.tostring(root)   
-    novo = ET.fromstring(tree)
-    rough_string = ET.tostring(novo, 'utf-8')
-    reparsed = minidom.parseString(rough_string)
-    print(reparsed.toprettyxml(indent="\t"))
-
     arquivoSaida = open(nomeArquivoSaida,'w')
-    arquivoSaida.write(reparsed.toprettyxml(indent="\t"))
+    level = 0
+    ast.printNode(level)
     arquivoSaida.close()
     print('Fim da análise sintática.\n')
     return ast
 
 def Decl_Comando(lista):
-    # print('Decl_Comando recebeu:\n ' + str(lista))
     global token,  currentType,  currentToken
 
     if (token.type == INT or token.type == FLOAT):
         no1 = Declaracao(lista)
-        # print('Declaracao retornou:\n ' + str(lista))
         return Decl_Comando(no1)
     elif (token.type == ID or token.type == IF or token.type == WHILE or token.type == PRINT
           or token.type == READ):
         no1 = Comando(lista) #Criamos nós na ast para cada comando encontrado
-        # print('Comando retornou:\n ' + str(lista))
         return Decl_Comando(no1)
     else:
         return lista
@@ -518,12 +549,12 @@ def Atribuicao(lista):
     match(ID)
     match(ATTR)
     expr_node = Expressao()
-    lista.children.append(Attr('=',id_node,expr_node))
+    lista.children.append(Attr(id_node,'=',expr_node))
     match(PCOMMA)
     return lista
 
 def ComandoRead(lista):
-	read_node = Read(READ)
+	read_node = Read()
 	match(READ)
 	id_node = Id(token)
 	read_node.children.append(id_node)
@@ -570,7 +601,7 @@ def ComandoEnquanto(lista):
 	return lista
 
 def ComandoPrint(lista):
-	print_node = Print(PRINT)
+	print_node = Print()
 	match(PRINT)
 	match(LBRACKET)
 	expr = Expressao()
@@ -631,6 +662,7 @@ def IgualdadeOpc(expr):
 def Relacao():
 	expr = Adicao()
 	return RelacaoOpc(expr)
+
 
 def RelacaoOpc(expr):
 	if(token.type == LT):
