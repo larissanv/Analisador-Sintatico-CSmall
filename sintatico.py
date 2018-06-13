@@ -34,6 +34,7 @@ LT = 26
 LE = 27
 GT = 28
 GE = 29
+FOR = 30
 
 int_type = 0
 float_type = 1
@@ -43,7 +44,7 @@ typeNames[int_type] = 'int'
 typeNames[float_type] = 'float'
 
 
-dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST'}
+dic_tokens = { ID: 'ID', MAIN: 'MAIN',INT: 'INT',FLOAT: 'FLOAT',IF: 'IF',ELSE: 'ELSE',WHILE: 'WHILE',READ: 'READ',PRINT: 'PRINT', LBRACKET: 'LBRACKET' ,RBRACKET: 'RBRACKET',LBRACE: 'LBRACE',RBRACE: 'RBRACE',COMMA: 'COMMA',PCOMMA: 'PCOMMA',ATTR: 'ATTR',LT: 'LT',LE: 'LE',GT: 'GT',GE: 'GE',EQ: 'EQ',NE: 'NE',OR: 'OR',AND: 'AND',PLUS: 'PLUS',MINUS: 'MINUS',MULT: 'MULT',DIV: 'DIV', INTEGER_CONST: 'INTEGER_CONST', FLOAT_CONST: 'FLOAT_CONST', FOR : 'FOR'}
 
 i = 0
 # token = vetorTokens[i]
@@ -167,11 +168,10 @@ class Attr(AST):
         return str(self.nome)
     def __str__(self, level):
         return str(self.nome)
-
    
 class If(AST):
-    def __init__(self, exp, c_true, c_false, father):
-        AST.__init__(self, 'If', father)
+    def __init__(self, exp, c_true, c_false):
+        AST.__init__(self, 'If')
         print('Criando um nó do tipo If.')
         self.children.append(exp)
         self.children.append(c_true)
@@ -188,7 +188,6 @@ class If(AST):
     def __str__(self, level):
         return str(self.nome)
 
-
 class While(AST):
     def __init__(self, exp, commands):
         AST.__init__(self,'While')
@@ -202,9 +201,19 @@ class While(AST):
         return str(self.nome)
     def __str__(self, level):
         return str(self.nome)
-    # def printNode(self, level):
-    #     deslocamento = self.tabs(level)
-    #     print(deslocamento + "<" + str(self.nome) + ">")
+
+class For(AST):
+    def __init__(self, exp, commands):
+        AST.__init__(self,'For')
+        print('Criando um nó do tipo For.')
+        self.children.append(exp)
+        self.children.append(commands)
+    def __init__(self,nome):
+    	AST.__init__(self, nome)
+    def __repr__(self):
+        return str(self.nome)
+    def __str__(self, level):
+        return str(self.nome)
 
 class Read(AST):
     def __init__(self):
@@ -354,44 +363,9 @@ class Num(AST):
         print(" value=" + str(self.token.lexema) +" type='"+ str(dic_tokens[self.token.type]) + "' />")
         arquivoSaida.write(" value=" + str(self.token.lexema) +" type='"+ str(dic_tokens[self.token.type]) + "' />\n")
 
-def print_tree(current_node, indent="", last='updown'):
-
-    nb_children = lambda node: sum(nb_children(child) for child in node.children) + 1
-    size_branch = {child: nb_children(child) for child in current_node.children}
-
-    """ Creation of balanced lists for "up" branch and "down" branch. """
-    up = sorted(current_node.children, key=lambda node: nb_children(node))
-    down = []
-    while up and sum(size_branch[node] for node in down) < sum(size_branch[node] for node in up):
-        down.append(up.pop())
-
-    """ Printing of "up" branch. """
-    for child in up:
-        next_last = 'up' if up.index(child) is 0 else ''
-        next_indent = '{0}{1}{2}'.format(indent, ' ' if 'up' in last else '│', " " * len(current_node.__repr__()))
-        print_tree(child, indent=next_indent, last=next_last)
-
-    """ Printing of current node. """
-    if last == 'up': start_shape = '┌'
-    elif last == 'down': start_shape = '└'
-    elif last == 'updown': start_shape = ' '
-    else: start_shape = '├'
-
-    if up: end_shape = '┤'
-    elif down: end_shape = '┐'
-    else: end_shape = ''
-
-    print('{0}{1}{2}{3}'.format(indent, start_shape, current_node.__repr__(), end_shape))
-
-    """ Printing of "down" branch. """
-    for child in down:
-        next_last = 'down' if down.index(child) is len(down) - 1 else ''
-        next_indent = '{0}{1}{2}'.format(indent, ' ' if 'down' in last else '│', " " * len(current_node.__repr__()))
-        print_tree(child, indent=next_indent, last=next_last)
-
-
 def match(tok):
     global token, i
+    print (tok)
     if(token.type == tok):
         #print('Token ' + repr(token) + ' reconhecido na entrada.')
         i = i + 1
@@ -435,7 +409,6 @@ def getIdTabelaSimbolos(id):
             return(lista_tabelaSimbolos[it][1])
     return "None"
 
-
 def printTabelaSimbolos():
     print(lista_tabelaSimbolos)
 
@@ -473,12 +446,11 @@ def Decl_Comando(lista):
         no1 = Declaracao(lista)
         return Decl_Comando(no1)
     elif (token.type == ID or token.type == IF or token.type == WHILE or token.type == PRINT
-          or token.type == READ):
+          or token.type == READ or token.type == FOR):
         no1 = Comando(lista) #Criamos nós na ast para cada comando encontrado
         return Decl_Comando(no1)
     else:
         return lista
-
 
 def Declaracao(no):
     global token,  currentType, currentToken, id_node
@@ -489,7 +461,6 @@ def Declaracao(no):
         match(ID) #cria uma entrada na tabela de símbolos para esse identificador
         return Decl2(no)
     return no
-
 
 def Tipo():
     global token,  currentType,  currentToken
@@ -520,10 +491,11 @@ def Decl2(no):
         return Decl2(no)
     return no
 
-
 def Comando(lista):
 	if(token.type == LBRACE):
 		return Bloco(lista)
+	elif(token.type == FOR):
+		return ComandoFor(lista)
 	elif(token.type == ID):
 		return Atribuicao(lista)
 	elif(token.type == IF):
@@ -584,7 +556,7 @@ def ComandoSenao(if_node):
 		retorno = Comando(c_false)
 		if_node.children.append(retorno)
 		return if_node
-	else :
+	else:
 		return if_node
 
 def ComandoEnquanto(lista):
@@ -599,6 +571,35 @@ def ComandoEnquanto(lista):
 	while_node.children.append(retorno)
 	lista.children.append(while_node)
 	return lista
+
+def ComandoFor(lista):
+	global id_node
+	for_node = For("For")
+	match(FOR)
+	match(LBRACKET)
+	id_node = Id(token)
+	match(ID)
+	match(ATTR)
+	expr_node = Expressao()
+	for_node.children.append(Attr(id_node,'=',expr_node))
+	match(PCOMMA)
+	expr_node = Expressao()
+	for_node.children.append(expr_node)
+	match(PCOMMA)	
+	id_node = Id(token)
+	match(ID)
+	match(ATTR)
+	expr_node = Expressao()
+	for_node.children.append(Attr(id_node,'=',expr_node))	
+	match(RBRACKET)
+	c_true = AST('C_TRUE')
+	retorno = Comando(c_true)
+	for_node.children.append(retorno)
+	lista.children.append(for_node)
+	return lista
+
+# ComandoFor → FOR LBRACKET AtribuicaoFor PCOMMA Expressao PCOMMA AtribuicaoFor RBRACKET Comando
+# AtribuicaoFor → ID ATTR Expressao
 
 def ComandoPrint(lista):
 	print_node = Print()

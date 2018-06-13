@@ -4,10 +4,9 @@ import sintatico as token
 class Lexico():
 
 	def __init__(self):
-		self.dic_tokens = {'id': ID, 'main': MAIN, 'int': INT, 'float': FLOAT, 'if': IF,'else': ELSE,'while': WHILE, 'read': READ,'print': PRINT,'(': LBRACKET,')': RBRACKET,'{': LBRACE,'}': RBRACE,',': COMMA,';': PCOMMA,'=': ATTR,'<': LT,'<=': LE,'>': GT,'>=': GE,'==': EQ,'!=': NE,'||': OR,	'&&': AND,'+': PLUS,'-': MINUS,'*': MULT,'/': DIV, 'num_integer': INTEGER_CONST, 'num_float': FLOAT_CONST, '!': 'EXCLAMACAO'}
+		self.dic_tokens = {'id': ID, 'main': MAIN, 'int': INT, 'float': FLOAT, 'if': IF,'else': ELSE,'while': WHILE, 'read': READ,'print': PRINT,'(': LBRACKET,')': RBRACKET,'{': LBRACE,'}': RBRACE,',': COMMA,';': PCOMMA,'=': ATTR,'<': LT,'<=': LE,'>': GT,'>=': GE,'==': EQ,'!=': NE,'||': OR,	'&&': AND,'+': PLUS,'-': MINUS,'*': MULT,'/': DIV, 'num_integer': INTEGER_CONST, 'num_float': FLOAT_CONST, '!': 'EXCLAMACAO', 'for': FOR}
 		self.operadores = ['+','-','*','/','=','<','>','!','&','|']
 		self.separadores = [' ', '\n', '\t', '(', ')','{','}',',',';','\r']
-		# 'for': FOR, FOR REMOVIDO POIS NAO TINHA NO ARQUIVO DO XANDAO
 
 	def num_inteiro(self, token):
 		result = regex.match("^-?\\d*(\\d+)?$", token)
@@ -74,26 +73,20 @@ class Lexico():
 						
 						if buffer in self.dic_tokens:
 							novotoken = token.Token(self.dic_tokens[buffer],buffer,linha)
-							# novotoken = token.Token(self.dic_tokens[buffer],buffer)
 							lista_tokens.append(novotoken)
 							buffer = ""
 						else:
 							if(self.num_inteiro(buffer) or self.num_float(buffer) or self.identificador(buffer)):
 								if self.num_inteiro(buffer):
 									novotoken = token.Token(self.dic_tokens['num_integer'],buffer,linha)
-									# novotoken = token.Token(self.dic_tokens['num_integer'],buffer)
 								elif self.num_float(buffer):
 									novotoken = token.Token(self.dic_tokens['num_float'],buffer,linha)
-									# novotoken = token.Token(self.dic_tokens['num_float'],buffer)
-
 								elif self.identificador(buffer):
 									novotoken = token.Token(self.dic_tokens['id'],buffer,linha)
-									# novotoken = token.Token(self.dic_tokens['id'],buffer)
 								lista_tokens.append(novotoken)
 								buffer = ""
 					if c in self.dic_tokens:
 						novotoken = token.Token(self.dic_tokens[c],c,linha)
-						# novotoken = token.Token(self.dic_tokens[c],c,)
 						lista_tokens.append(novotoken)
 				else:
 					buffer = buffer + c
@@ -104,25 +97,21 @@ class Lexico():
 					lista_tokens.pop()
 					lista_tokens.pop()
 					novotoken = token.Token(self.dic_tokens['=='],'==',linha)
-					# novotoken = token.Token(self.dic_tokens['=='],'==')
 					lista_tokens.append(novotoken)
 				elif lista_tokens[-1].lexema == '=' and lista_tokens[-2].lexema == '!':
 					lista_tokens.pop()
 					lista_tokens.pop()
 					novotoken = token.Token(self.dic_tokens['!='],'!=',linha)
-					# novotoken = token.Token(self.dic_tokens['!='],'!=')
 					lista_tokens.append(novotoken)
 				elif lista_tokens[-1].lexema == '=' and lista_tokens[-2].lexema == '<':
 					lista_tokens.pop()
 					lista_tokens.pop()
 					novotoken = token.Token(self.dic_tokens['<='],'<=',linha)
-					# novotoken = token.Token(self.dic_tokens['<='],'<=')
 					lista_tokens.append(novotoken)
 				elif lista_tokens[-1].lexema == '=' and lista_tokens[-2].lexema == '>':
 					lista_tokens.pop()
 					lista_tokens.pop()
 					novotoken = token.Token(self.dic_tokens['>='],'>=',linha)
-					# novotoken = token.Token(self.dic_tokens['>='],'>=',)
 					lista_tokens.append(novotoken)
 		#fim do for que le o codigo fonte
 
@@ -163,3 +152,4 @@ LT = 26
 LE = 27
 GT = 28
 GE = 29
+FOR = 30
