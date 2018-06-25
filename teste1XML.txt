@@ -1,0 +1,20 @@
+<Main>
+    <Attr>
+        <Id lexema='a' type='FLOAT' />
+        <Num value=1000 type='INTEGER_CONST' />
+    </Attr>
+    <Attr>
+        <Id lexema='b' type='FLOAT' />
+        <Num value=9 type='INTEGER_CONST' />
+    </Attr>
+    <Attr>
+        <Id lexema='c' type='INT' />
+        <ArithOp op='*' >
+            <Id lexema='a' type='FLOAT' />
+            <Id lexema='b' type='FLOAT' />
+        </ArithOp>
+    </Attr>
+    <Print >
+        <Id lexema='b' type='FLOAT' />
+    </Print>
+</Main>

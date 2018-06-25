@@ -1,5 +1,9 @@
 int main(){
-   int b;
-   for(b = 0; b < 10;b = b + 1)
-	print(b);
+   float a = 1000, b;
+   int c;
+    b = 9;
+    
+   c = a*b;
+
+   print(b);
 }
