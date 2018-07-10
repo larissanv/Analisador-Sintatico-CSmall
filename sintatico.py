@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import regex as regex
-
 
 #TOKEN CODES
 EOF = -1
@@ -65,7 +63,6 @@ def num_float(token):
 		else:
 			 return True
 
-
 class AST(object):
     def __init__(self, nome):
          self.nome = nome
@@ -77,9 +74,10 @@ class AST(object):
         return self.nome
 
     def __evaluate__(self):
+        # print (self.children)
         for child in self.children:
             # if (child != None):
-            return child.__evaluate__()
+            child.__evaluate__()
 
     def tabs(self, level):
         deslocamento = ""
@@ -99,7 +97,6 @@ class AST(object):
 
         print(deslocamento + "</" + str(self.nome) + ">")
         arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
-
 
 class Token(object):
     def __init__(self, type, valor,numLinha):
@@ -125,6 +122,8 @@ class Token(object):
     def printNode(self, level):
         # deslocamento = self.tabs(level)
         print(deslocamento + "< Token >")
+    # def __evaluate__(self):
+    #     print("ID")
 
 class Compound(AST):
     """Represents a 'BEGIN ... END' block"""
@@ -138,6 +137,9 @@ class Compound(AST):
 
     def __str__(self, level):
         return str(self.nome)
+
+    def __evaluate__(self):
+        print("Bloco")
 
 class Attr(AST):
     def __init__(self, left, op, right):
@@ -154,12 +156,10 @@ class Attr(AST):
         return str(self.nome)
     
     def __evaluate__(self):
-        print('Avaliando Attr')        
+        # print('Avaliando Attr')        
         id_node = self.children[0]
-        # print ("lexema " + id_node.token.lexema)
         lex = id_node.token.lexema
         tipo = getIdTabelaSimbolos(lex)                         
-        # print("tipo " + tipo)
         retorno = self.children[1].__evaluate__()
         if(num_float(str(retorno)) and (tipo == "FLOAT")):
             setIdTabelaSimbolos(id_node.token.lexema,tipo,retorno)
@@ -170,9 +170,8 @@ class Attr(AST):
             arquivoSaidaErros.write("Linha: " + str(id_node.token.numLinha) + " - atribuição de valor FLOAT para ID '" + str(id_node.token.lexema) + "' de tipo INT\n")
         elif (not(num_float(str(retorno))) and (tipo == "FLOAT")):
             setIdTabelaSimbolos(id_node.token.lexema,tipo,retorno)
-            print ("WARNING Linha: " + str(id_node.token.numLinha) + " - atribuição de valor INT para ID '" + str(id_node.token.lexema) + "' de tipo FLOAT")
-            arquivoSaidaErros.write("WARNING Linha: " + str(id_node.token.numLinha) + " - atribuição de valor INT para ID '" + str(id_node.token.lexema) + "' de tipo FLOAT\n")
-
+            print ("Linha: " + str(id_node.token.numLinha) + " - WARNING - atribuição de valor INT para ID '" + str(id_node.token.lexema) + "' de tipo FLOAT")
+            arquivoSaidaErros.write("Linha: " + str(id_node.token.numLinha) + " - WARNING - atribuição de valor INT para ID '" + str(id_node.token.lexema) + "' de tipo FLOAT\n")
 
 class If(AST):
     def __init__(self, exp, c_true, c_false):
@@ -184,14 +183,19 @@ class If(AST):
         self.exp = exp
         self.c_true = c_true
         self.c_false = c_false
-
     def __init__(self,  nome):
         AST.__init__(self, "If")
-
     def __repr__(self):
         return str(self.nome)
     def __str__(self):
         return str(self.nome)
+    def __evaluate__(self):
+        valor = self.children[0].__evaluate__()
+        if(valor == True):
+            self.children[1].__evaluate__()
+        else:
+        	if(len(self.children) is not 2):
+        		self.children[2].__evaluate__()
 
 class While(AST):
     def __init__(self, exp, commands):
@@ -201,11 +205,15 @@ class While(AST):
         self.children.append(commands)
     def __init__(self,nome):
         AST.__init__(self, nome)
-
     def __repr__(self):
         return str(self.nome)
     def __str__(self):
         return str(self.nome)
+    def __evaluate__(self):
+        valor = self.children[0].__evaluate__()
+        while(valor == True):
+        	self.children[1].__evaluate__()
+        	valor = self.children[0].__evaluate__()
 
 class For(AST):
     def __init__(self, exp, commands):
@@ -219,22 +227,27 @@ class For(AST):
         return str(self.nome)
     def __str__(self):
         return str(self.nome)
+    def __evaluate__(self):
+        valor = self.children[0].__evaluate__()
+        while(valor == True):
+        	self.children[1].__evaluate__()
+        	valor = self.children[0].__evaluate__()
 
 class Read(AST):
     def __init__(self):
         AST.__init__(self,'Read')
         print('Criando um nó do tipo Read.')
-
     def __repr__(self):
         return str(self.nome)
     def __str__(self):
         return str(self.nome)
+    # def __evaluate__(self):
+    #     print("Read")
 
 class Print(AST):
     def __init__(self):
         AST.__init__(self,'Print')
         print('Criando um nó do tipo Print.')
-
     def __repr__(self):
         return str(self.nome)
     def __str__(self):
@@ -246,9 +259,10 @@ class Print(AST):
         for child in self.children:
             # if (child != None):
             child.printNode(level+1)
-
         print(deslocamento + "</" + str(self.nome) + ">")
         arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
+    # def __evaluate__(self):
+    #     print("Print")
 
 class BinOp(AST):
     def __init__(self, nome, op, left, right):
@@ -258,11 +272,9 @@ class BinOp(AST):
         self.children.append(right)
     def __str__(self):
         return str(self.nome)
-
     def __repr__(self):
         # return str("op")
         return str(self.op)  # + ': ' + self.children[0].__repr__() + ', ' + self.children[1].__repr__()
-
     def printNode(self, level):
         deslocamento = self.tabs(level)
         print(deslocamento + "<" + str(self.nome) + " op='" + str(self.op) +"' >")
@@ -270,12 +282,10 @@ class BinOp(AST):
         for child in self.children:
             # if (child != None):
             child.printNode(level+1)
-
         print(deslocamento + "</" + str(self.nome) + ">")
-        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
-    
+        arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")  
     def __evaluate__(self):
-        print('Avaliando nó BinOp')
+        # print('Avaliando nó BinOp')
         for child in self.children:
             if (child != None): 
                 return child.__evaluate__()  
@@ -297,17 +307,17 @@ class LogicalOp(BinOp):
         print(deslocamento + "</" + str(self.nome) + ">")
         arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
     def __evaluate__(self):
-        l = self.children[1].__evaluate__()
-        r = self.children[2].__evaluate__()
+        l = self.children[0].__evaluate__()
+        r = self.children[1].__evaluate__()
        
         if(self.op == '&&'):
-            if(l is True and r is True):
+            if(((l is True) or (l !=0)) and ((r is True) or (r !=0))):
                 l = True
             else:
                 l = False
             return l
         elif(self.op == '||'):
-        	if(l is True or r is True):
+        	if(((l is True)  or (l !=0)) or ((r is True) or (r !=0))):
         		l = True
         	else:
         		l = False
@@ -326,13 +336,12 @@ class ArithOp(BinOp):
         for child in self.children:
             # if (child != None):
             child.printNode(level+1)
-
         print(deslocamento + "</" + str(self.nome) + ">")
         arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
 
     def __evaluate__(self):
-        left = self.children[1].__evaluate__()
-        right = self.children[2].__evaluate__()
+        left = self.children[0].__evaluate__()
+        right = self.children[1].__evaluate__()
         aux = 0
         if(num_float(str(left))):
             l = float(left)
@@ -368,13 +377,11 @@ class RelOp(BinOp):
         for child in self.children:
             # if (child != None):
             child.printNode(level+1)
-
         print(deslocamento + "</" + str(self.nome) + ">")
         arquivoSaida.write(deslocamento + "</" +str(self.nome) + ">\n")
-    
     def __evaluate__(self):
-        l = self.children[1].__evaluate__()
-        r = self.children[2].__evaluate__()
+        l = self.children[0].__evaluate__()
+        r = self.children[1].__evaluate__()
         if(self.op == '<'):
         	if(float(l) < float(r)):
         		l = True
@@ -421,14 +428,11 @@ class Id(AST):
         if(getIdTabelaSimbolos(str(token.lexema)) == "None"):
             print ("Linha: " + str(token.numLinha) + " - ID '" + str(token.lexema) + "' não foi declarado")
             arquivoSaidaErros.write("Linha: " + str(token.numLinha) + " - ID '" + str(token.lexema) + "' não foi declarado\n")
-
     def __str__(self):
         return str("ID")
-
     def __repr__(self):
         # return str(self.token)
         return str("ID")
-
     def printNode(self, level):
         deslocamento = self.tabs(level)
         print(deslocamento + "<" + self.nome, end='')
@@ -438,10 +442,10 @@ class Id(AST):
         arquivoSaida.write(" lexema='" + str(self.token.lexema) +"' type='"+ tipoTabelaSimbolos + "' />\n")
     
     def __evaluate__(self):
-        print("ID")
-        v = lista_tabelaSimbolos[self.token.lexema][1]
-        if (v != None):
-            return v
+        # print("ID")
+        t = getValueDeIdTabelaSimbolos(self.token.lexema)
+        if (t != None):
+            return t
         else: 
             return 0
 
@@ -527,6 +531,11 @@ def getIdTabelaSimbolos(id):
         if(id == lista_tabelaSimbolos[it][0]):
             return(lista_tabelaSimbolos[it][1])
     return "None"
+def getValueDeIdTabelaSimbolos(id):
+    for it in range(0,len(lista_tabelaSimbolos)):
+        if(id == lista_tabelaSimbolos[it][0]):
+            return(lista_tabelaSimbolos[it][2])
+    return 0
 
 def printTabelaSimbolos():
     print(lista_tabelaSimbolos)

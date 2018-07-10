@@ -1,1 +1,4 @@
-WARNING Linha: 1 - atribuição de valor INT para ID 'a' de tipo FLOAT
+Linha: 17 - redeclaração do ID 'c'
+Linha: 16 - ID 'g' não foi declarado
+Linha: 3 - WARNING - atribuição de valor INT para ID 'b' de tipo FLOAT
+Linha: 5 - atribuição de valor FLOAT para ID 'c' de tipo INT
